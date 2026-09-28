@@ -13,7 +13,6 @@ class NewsShimmerLoading extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       children: [
-        // Featured card shimmer
         Shimmer.fromColors(
           baseColor: baseColor,
           highlightColor: highlightColor,
@@ -26,10 +25,8 @@ class NewsShimmerLoading extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 24),
-        // Article list shimmer
-        ...List.generate(
-          5,
-          (index) => Padding(
+        for (var i = 0; i < 5; i++)
+          Padding(
             padding: const EdgeInsets.only(bottom: 16),
             child: Shimmer.fromColors(
               baseColor: baseColor,
@@ -52,29 +49,12 @@ class NewsShimmerLoading extends StatelessWidget {
                         Container(
                           height: 14,
                           width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
+                          color: Colors.white,
                         ),
                         const SizedBox(height: 8),
-                        Container(
-                          height: 14,
-                          width: 200,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
+                        Container(height: 14, width: 200, color: Colors.white),
                         const SizedBox(height: 12),
-                        Container(
-                          height: 10,
-                          width: 120,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
+                        Container(height: 10, width: 120, color: Colors.white),
                       ],
                     ),
                   ),
@@ -82,7 +62,6 @@ class NewsShimmerLoading extends StatelessWidget {
               ),
             ),
           ),
-        ),
       ],
     );
   }

@@ -4,19 +4,18 @@ import '../core/app_constants.dart';
 import '../core/app_theme.dart';
 
 class CategorySelector extends StatelessWidget {
-  final String selectedCategory;
-  final ValueChanged<String> onCategorySelected;
-
   const CategorySelector({
     super.key,
     required this.selectedCategory,
     required this.onCategorySelected,
   });
 
+  final String selectedCategory;
+  final ValueChanged<String> onCategorySelected;
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return SizedBox(
       height: 44,
@@ -26,48 +25,37 @@ class CategorySelector extends StatelessWidget {
         itemCount: AppConstants.categories.length,
         itemBuilder: (context, index) {
           final category = AppConstants.categories[index];
-          final isSelected = category == selectedCategory;
+          final selected = category == selectedCategory;
 
           return Padding(
             padding: const EdgeInsets.only(right: 8),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              child: FilterChip(
-                selected: isSelected,
-                showCheckmark: false,
-                label: Text(
-                  _capitalize(category),
-                  style: TextStyle(
-                    color: isSelected
-                        ? Colors.white
-                        : isDark
-                            ? Colors.white70
-                            : Colors.black87,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                    fontSize: 13,
-                  ),
+            child: FilterChip(
+              selected: selected,
+              showCheckmark: false,
+              label: Text(
+                category[0].toUpperCase() + category.substring(1),
+                style: TextStyle(
+                  color: selected
+                      ? Colors.white
+                      : isDark
+                          ? Colors.white70
+                          : Colors.black87,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                  fontSize: 13,
                 ),
-                backgroundColor:
-                    isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
-                selectedColor: AppTheme.primaryColor,
-                elevation: isSelected ? 4 : 0,
-                shadowColor: AppTheme.primaryColor.withValues(alpha: 0.3),
-                side: BorderSide(
-                  color: isSelected
-                      ? AppTheme.primaryColor
-                      : Colors.transparent,
-                  width: 1.5,
-                ),
-                onSelected: (_) => onCategorySelected(category),
               ),
+              backgroundColor:
+                  isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
+              selectedColor: AppTheme.primaryColor,
+              elevation: selected ? 2 : 0,
+              side: BorderSide(
+                color: selected ? AppTheme.primaryColor : Colors.transparent,
+              ),
+              onSelected: (_) => onCategorySelected(category),
             ),
           );
         },
       ),
     );
   }
-
-  String _capitalize(String s) =>
-      s[0].toUpperCase() + s.substring(1);
 }

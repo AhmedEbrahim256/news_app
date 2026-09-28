@@ -8,12 +8,10 @@ class AppTheme {
   static const Color secondaryColor = Color(0xFF00D4AA);
   static const Color accentColor = Color(0xFFFF6584);
 
-  // Dark Theme Colors matching the image
   static const Color darkBg = Color(0xFF222222);
   static const Color darkCard = Color(0xFF222222);
   static const Color darkSurface = Color(0xFF222222);
 
-  // Light Theme Colors
   static const Color lightBg = Color(0xFFF5F7FA);
   static const Color lightCard = Color(0xFFFFFFFF);
   static const Color lightSurface = Color(0xFFEEF1F8);
@@ -100,7 +98,6 @@ class AppTheme {
   }
 
   static ThemeData get lightTheme {
-    // Keep light theme roughly the same, but update primaryColor usage
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
@@ -110,6 +107,36 @@ class AppTheme {
         secondary: secondaryColor,
         tertiary: accentColor,
         surface: lightCard,
+      ),
+      textTheme: GoogleFonts.interTextTheme(
+        const TextTheme(
+          headlineMedium: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF1A1A1A),
+          ),
+          headlineSmall: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF1A1A1A),
+          ),
+          bodyLarge: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w400,
+            color: Color(0xFF333333),
+            height: 1.6,
+          ),
+          bodyMedium: TextStyle(
+            fontSize: 14,
+            color: Color(0xFF666666),
+            height: 1.5,
+          ),
+          labelSmall: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF888888),
+          ),
+        ),
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: primaryColor,

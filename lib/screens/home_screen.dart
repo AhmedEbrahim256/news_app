@@ -1,12 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../bloc/news/news_bloc.dart';
+import '../core/app_theme.dart';
 import '../widgets/article_list_tile.dart';
 import '../widgets/category_selector.dart';
 import '../widgets/featured_news_card.dart';
 import '../widgets/news_shimmer_loading.dart';
-import '../core/app_theme.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,7 +18,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final TextEditingController _searchController = TextEditingController();
+  final _searchController = TextEditingController();
   bool _isSearchVisible = false;
 
   @override
@@ -25,11 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  void _startSearch() {
-    setState(() => _isSearchVisible = true);
-  }
-
-  void _closeSearch(BuildContext context) {
+  void _closeSearch() {
     _searchController.clear();
     context.read<NewsBloc>().add(ClearSearch());
     setState(() => _isSearchVisible = false);
@@ -44,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 controller: _searchController,
                 autofocus: true,
                 style: const TextStyle(color: Colors.white),
+                cursorColor: Colors.white,
                 textInputAction: TextInputAction.search,
                 decoration: const InputDecoration(
                   hintText: 'Search news...',
@@ -63,9 +62,9 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: Icon(_isSearchVisible ? Icons.close : Icons.search),
             onPressed: () {
               if (_isSearchVisible) {
-                _closeSearch(context);
+                _closeSearch();
               } else {
-                _startSearch();
+                setState(() => _isSearchVisible = true);
               }
             },
           ),
@@ -83,7 +82,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       selectedCategory: state.selectedCategory,
                       onCategorySelected: (category) {
                         if (category != state.selectedCategory) {
-                          context.read<NewsBloc>().add(ChangeCategory(category));
+                          context
+                              .read<NewsBloc>()
+                              .add(ChangeCategory(category));
                         }
                       },
                     ),
@@ -109,8 +110,11 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline,
-                  size: 64, color: AppTheme.accentColor.withValues(alpha: 0.8)),
+              Icon(
+                Icons.error_outline,
+                size: 64,
+                color: AppTheme.accentColor.withValues(alpha: 0.8),
+              ),
               const SizedBox(height: 16),
               Text(
                 'Failed to load news',
@@ -154,27 +158,29 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return RefreshIndicator(
-      onRefresh: () async {
-        context.read<NewsBloc>().add(RefreshNews());
-        await context
-            .read<NewsBloc>()
-            .stream
-            .firstWhere((s) => s.status != NewsStatus.loading);
-      },
       color: AppTheme.primaryColor,
+      onRefresh: () {
+        final done = Completer<void>();
+        context.read<NewsBloc>().add(RefreshNews(done));
+        return done.future;
+      },
       child: ListView.builder(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         itemCount: articles.length,
         itemBuilder: (context, index) {
-          // Show the first top-headline as a large featured card; everything
-          // else (and every search result) is a regular list tile.
           if (!state.isSearching && index == 0) {
             return Padding(
               padding: const EdgeInsets.only(bottom: 24),
-              child: FeaturedNewsCard(article: articles[0]),
+              child: FeaturedNewsCard(
+                article: articles[0],
+                heroIndex: 0,
+              ),
             );
           }
-          return ArticleListTile(article: articles[index], index: index);
+          return ArticleListTile(
+            article: articles[index],
+            index: index,
+          );
         },
       ),
     );

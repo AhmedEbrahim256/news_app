@@ -1,15 +1,19 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../core/app_theme.dart';
 import '../models/article_model.dart';
 import '../screens/article_detail_screen.dart';
+import 'article_image.dart';
 
 class FeaturedNewsCard extends StatelessWidget {
-  final Article article;
+  const FeaturedNewsCard({
+    super.key,
+    required this.article,
+    required this.heroIndex,
+  });
 
-  const FeaturedNewsCard({super.key, required this.article});
+  final Article article;
+  final int heroIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +21,10 @@ class FeaturedNewsCard extends StatelessWidget {
       onTap: () => Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => ArticleDetailScreen(article: article),
+          builder: (_) => ArticleDetailScreen(
+            article: article,
+            heroIndex: heroIndex,
+          ),
         ),
       ),
       child: Container(
@@ -38,38 +45,10 @@ class FeaturedNewsCard extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // Background Image
-              Hero(
-                tag: 'article-image-${article.url}',
-                child: CachedNetworkImage(
-                  imageUrl: article.urlToImage ?? '',
-                  fit: BoxFit.cover,
-                  placeholder: (_, __) => Container(
-                    color: AppTheme.darkCard,
-                    child: const Center(
-                      child: Icon(Icons.newspaper,
-                          size: 48, color: Colors.white24),
-                    ),
-                  ),
-                  errorWidget: (_, __, ___) => Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          AppTheme.primaryColor,
-                          AppTheme.secondaryColor,
-                        ],
-                      ),
-                    ),
-                    child: const Center(
-                      child: Icon(Icons.article_outlined,
-                          size: 48, color: Colors.white70),
-                    ),
-                  ),
-                ),
+              ArticleImage(
+                imageUrl: article.imageUrl,
+                heroTag: article.heroTag(heroIndex),
               ),
-              // Gradient overlay
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -77,51 +56,36 @@ class FeaturedNewsCard extends StatelessWidget {
                     end: Alignment.bottomCenter,
                     colors: [
                       Colors.transparent,
-                      Colors.black.withValues(alpha: 0.3),
+                      Colors.black.withValues(alpha: 0.35),
                       Colors.black.withValues(alpha: 0.85),
                     ],
-                    stops: const [0.0, 0.4, 1.0],
+                    stops: const [0.0, 0.45, 1.0],
                   ),
                 ),
               ),
-              // "Breaking" badge
-              Positioned(
-                top: 16,
-                left: 16,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppTheme.accentColor, Color(0xFFFF3E6C)],
+              if (article.isRecent)
+                Positioned(
+                  top: 16,
+                  left: 16,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
                     ),
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.accentColor.withValues(alpha: 0.4),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
+                    decoration: BoxDecoration(
+                      color: AppTheme.accentColor,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text(
+                      'Latest',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
                       ),
-                    ],
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.bolt, color: Colors.white, size: 14),
-                      SizedBox(width: 4),
-                      Text(
-                        'Breaking',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-              // Title & Info
               Positioned(
                 bottom: 16,
                 left: 16,
@@ -146,7 +110,9 @@ class FeaturedNewsCard extends StatelessWidget {
                         if (article.sourceName != null) ...[
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 3),
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(8),
@@ -156,26 +122,18 @@ class FeaturedNewsCard extends StatelessWidget {
                               style: const TextStyle(
                                 color: Colors.white70,
                                 fontSize: 11,
-                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ),
                           const SizedBox(width: 8),
                         ],
-                        if (article.publishedAt != null)
-                          Row(
-                            children: [
-                              const Icon(Icons.access_time,
-                                  color: Colors.white54, size: 12),
-                              const SizedBox(width: 4),
-                              Text(
-                                _formatDate(article.publishedAt!),
-                                style: const TextStyle(
-                                  color: Colors.white54,
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ],
+                        if (article.timeLabel.isNotEmpty)
+                          Text(
+                            article.timeLabel,
+                            style: const TextStyle(
+                              color: Colors.white54,
+                              fontSize: 11,
+                            ),
                           ),
                       ],
                     ),
@@ -187,19 +145,5 @@ class FeaturedNewsCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final diff = now.difference(date);
-
-    if (diff.inMinutes < 60) {
-      return '${diff.inMinutes}m ago';
-    } else if (diff.inHours < 24) {
-      return '${diff.inHours}h ago';
-    } else if (diff.inDays < 7) {
-      return '${diff.inDays}d ago';
-    }
-    return DateFormat('MMM dd').format(date);
   }
 }

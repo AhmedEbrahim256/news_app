@@ -7,38 +7,45 @@ abstract class NewsEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-/// Fetch top headlines for a specific category
 class FetchTopHeadlines extends NewsEvent {
-  final String category;
-
   const FetchTopHeadlines({this.category = 'general'});
 
-  @override
-  List<Object?> get props => [category];
-}
-
-/// Change selected category
-class ChangeCategory extends NewsEvent {
   final String category;
 
+  @override
+  List<Object?> get props => [category];
+}
+
+class ChangeCategory extends NewsEvent {
   const ChangeCategory(this.category);
+
+  final String category;
 
   @override
   List<Object?> get props => [category];
 }
 
-/// Search news articles
 class SearchNews extends NewsEvent {
-  final String query;
-
   const SearchNews(this.query);
+
+  final String query;
 
   @override
   List<Object?> get props => [query];
 }
 
-/// Clear search results and go back
 class ClearSearch extends NewsEvent {}
 
-/// Refresh current news
-class RefreshNews extends NewsEvent {}
+class RefreshNews extends NewsEvent {
+  // ignore: prefer_const_constructors_in_immutables
+  RefreshNews([this._done]);
+
+  final Completer<void>? _done;
+
+  void complete() {
+    final done = _done;
+    if (done != null && !done.isCompleted) {
+      done.complete();
+    }
+  }
+}
